@@ -1,10 +1,18 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>জ্ঞানকোষ</title>
+</head>
+<body>
 <!--
   ========================================================================
-  জ্ঞানকোষ LMS — Netlify/স্বাধীন হোস্টিং সংস্করণ (Supabase দিয়ে তৈরি)
+  জ্ঞানকোষ LMS — ইউজার অ্যাপ (Supabase দিয়ে তৈরি)
   ========================================================================
-  ব্যবহারের আগে অবশ্যই নিচের SUPABASE_URL ও SUPABASE_ANON_KEY অংশে আপনার
-  নিজের Supabase প্রজেক্টের তথ্য বসাতে হবে। বিস্তারিত সেটআপ নির্দেশনা চ্যাটে
-  দেওয়া হয়েছে।
+  এই ফাইল শুধু লার্নারদের জন্য। অ্যাডমিন অ্যাপ আলাদা ফাইলে (admin.html)।
+  দুটো ফাইলই একই Supabase ডাটাবেজে সংযুক্ত, তাই অ্যাডমিন যা যোগ/ডিলিট
+  করবেন তা এখানে সাথে সাথে (রিয়েল-টাইমে) দেখা যাবে।
   ========================================================================
 -->
 <style>
@@ -19,7 +27,7 @@
   .header-text { flex:1; min-width:0; }
   .header-text h1 { font-family:'Tiro Bangla',serif; font-size:18px; margin:0; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .header-text p { margin:2px 0 0; font-size:12px; color:#C9D2DE; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .back-btn, .header-icon-btn { background:rgba(255,255,255,0.1); border:none; color:var(--cream); border-radius:9px; padding:8px; cursor:pointer; display:flex; flex-shrink:0; }
+  .back-btn { background:rgba(255,255,255,0.1); border:none; color:var(--cream); border-radius:9px; padding:8px; cursor:pointer; display:flex; flex-shrink:0; }
   .content { flex:1; padding:20px; overflow-y:auto; padding-bottom:90px; }
   .bottom-nav { position:absolute; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--line); display:flex; padding:8px 6px 10px; }
   .nav-btn { flex:1; background:none; border:none; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 0; color:var(--ink-soft); font-size:11px; font-family:inherit; cursor:pointer; border-radius:10px; }
@@ -30,18 +38,17 @@
   .home-hero h2 { font-family:'Tiro Bangla',serif; font-size:20px; margin:10px 0 6px; font-weight:500; }
   .home-hero p { font-size:13px; color:#C9D2DE; margin:0; line-height:1.6; }
   .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
-  .stat-grid.three { grid-template-columns:1fr 1fr 1fr; }
   .stat-card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; }
-  .stat-num { font-family:'Tiro Bangla',serif; font-size:24px; color:var(--teal); margin:0; }
-  .stat-label { font-size:11.5px; color:var(--ink-soft); margin:2px 0 0; }
+  .stat-num { font-family:'Tiro Bangla',serif; font-size:26px; color:var(--teal); margin:0; }
+  .stat-label { font-size:12px; color:var(--ink-soft); margin:2px 0 0; }
   .quick-list { display:flex; flex-direction:column; gap:10px; }
   .quick-card { display:flex; align-items:center; gap:12px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; cursor:pointer; font-family:inherit; text-align:left; width:100%; }
   .quick-card-icon { width:38px; height:38px; border-radius:10px; background:var(--cream); display:flex; align-items:center; justify-content:center; color:var(--teal); flex-shrink:0; }
   .quick-card-text p:first-child { margin:0; font-weight:600; font-size:14px; }
   .quick-card-text p:last-child { margin:2px 0 0; font-size:12px; color:var(--ink-soft); }
-  .cat-card { display:flex; align-items:center; gap:12px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:10px; }
+  .cat-card { display:flex; align-items:center; gap:12px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:10px; cursor:pointer; }
   .cat-card-icon { width:38px; height:38px; border-radius:10px; background:var(--cream); display:flex; align-items:center; justify-content:center; color:var(--gold); flex-shrink:0; }
-  .cat-card-body { flex:1; min-width:0; cursor:pointer; }
+  .cat-card-body { flex:1; min-width:0; }
   .cat-card-body p:first-child { margin:0; font-weight:600; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .cat-card-body p.desc { margin:2px 0 0; font-size:12px; color:var(--ink-soft); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .cat-card-body p:last-child { margin:3px 0 0; font-size:12px; color:var(--ink-soft); }
@@ -59,46 +66,27 @@
   .item-link { font-size:12px; color:var(--teal); text-decoration:none; display:inline-flex; align-items:center; gap:2px; margin-top:2px; }
   .icon-btn { background:none; border:none; padding:6px; border-radius:8px; cursor:pointer; color:var(--ink-soft); display:flex; }
   .icon-btn.danger { color:var(--danger); }
-  .icon-btn.danger:active { background:#F3E4DF; }
-  .add-toggle { width:100%; border:1.5px dashed var(--teal); background:none; color:var(--teal); border-radius:14px; padding:12px; font-size:13.5px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px; cursor:pointer; font-family:inherit; margin-top:4px; margin-bottom:22px; }
-  .add-form { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; margin-top:4px; margin-bottom:22px; display:flex; flex-direction:column; gap:10px; }
-  .add-form.hidden, .add-toggle.hidden { display:none; }
-  .text-input { width:100%; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:14px; font-family:inherit; background:var(--cream); color:var(--ink); }
-  .text-input:focus { outline:2px solid var(--teal); outline-offset:1px; }
-  .url-field { display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:10px; padding:0 10px; background:var(--cream); }
-  .url-field .text-input { border:none; background:none; padding:10px 0; }
-  .url-field svg { color:var(--ink-soft); flex-shrink:0; }
-  .form-actions { display:flex; gap:8px; }
-  .btn { flex:1; padding:10px; border-radius:10px; border:none; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
-  .btn.primary { background:var(--teal); color:#fff; }
-  .btn.ghost { background:none; color:var(--ink-soft); border:1px solid var(--line); }
-  .btn.danger-btn { background:var(--danger); color:#fff; }
   .empty { text-align:center; padding:32px 20px; color:var(--ink-soft); }
   .empty-title { font-weight:600; margin:8px 0 4px; color:var(--ink); font-size:14px; }
   .empty-body { font-size:12.5px; margin:0; }
   .subhead { display:flex; align-items:center; gap:8px; margin:22px 0 10px; }
   .subhead h3 { font-size:14.5px; font-weight:700; margin:0; }
   .subhead .count { font-size:11.5px; color:var(--ink-soft); background:var(--cream); border-radius:999px; padding:2px 9px; }
-  .cat-detail-delete { width:100%; margin-top:8px; border:1px solid #E9D2C8; background:#FBF1EC; color:var(--danger); border-radius:12px; padding:12px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; }
   .profile-card { display:flex; align-items:center; gap:12px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; margin-top:22px; }
   .profile-avatar { width:40px; height:40px; border-radius:50%; background:var(--ink); color:var(--gold); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; flex-shrink:0; }
   .profile-info { flex:1; min-width:0; }
   .profile-name { margin:0; font-weight:600; font-size:14px; }
   .profile-contact { margin:2px 0 0; font-size:12px; color:var(--ink-soft); }
-  .gate { position:absolute; inset:0; background:rgba(23,36,61,0.55); display:flex; align-items:center; justify-content:center; padding:24px; z-index:20; }
-  .gate-card { background:#fff; border-radius:18px; padding:24px 20px; width:100%; max-width:300px; text-align:center; }
-  .gate-icon { width:44px; height:44px; border-radius:12px; background:var(--cream); color:var(--teal); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; }
-  .gate-card h3 { margin:0 0 4px; font-family:'Tiro Bangla',serif; font-size:18px; font-weight:500; }
-  .gate-sub { margin:0 0 16px; font-size:12px; color:var(--ink-soft); }
-  .gate-error { color:var(--danger); font-size:12px; margin:0 0 10px; }
-  .gate-hint { font-size:11px; color:var(--ink-soft); margin:12px 0 0; }
+  .gate-error { color:var(--danger); font-size:12px; margin:0 0 2px; }
+  .text-input { width:100%; border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:14px; font-family:inherit; background:var(--cream); color:var(--ink); margin-bottom:10px; }
+  .text-input:focus { outline:2px solid var(--teal); outline-offset:1px; }
+  .btn { padding:10px; border-radius:10px; border:none; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+  .btn.primary { background:var(--teal); color:#fff; }
   .login-wrap { flex:1; display:flex; align-items:center; justify-content:center; padding:24px; min-height:560px; }
   .login-card { background:#fff; border:1px solid var(--line); border-radius:18px; padding:28px 22px; width:100%; max-width:320px; text-align:center; }
   .login-card h2 { font-family:'Tiro Bangla',serif; font-size:19px; margin:14px 0 4px; font-weight:500; }
   .login-sub { font-size:12.5px; color:var(--ink-soft); margin:0 0 18px; }
   .login-note { font-size:11px; color:var(--ink-soft); margin:12px 0 0; line-height:1.5; }
-  .login-card .text-input { margin-bottom:10px; }
-  .admin-flag { position:absolute; top:14px; right:14px; background:var(--gold); color:var(--ink); font-size:10.5px; font-weight:700; padding:3px 10px; border-radius:999px; z-index:5; }
   .toast { position:absolute; bottom:78px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--cream); padding:9px 18px; border-radius:999px; font-size:12.5px; z-index:30; white-space:nowrap; }
   .config-warning { background: #FBF1EC; border: 1px solid #E9D2C8; color: var(--danger); border-radius: 12px; padding: 16px; font-size: 12.5px; line-height: 1.7; margin: 20px; }
   .config-warning code { background: #fff; padding: 1px 5px; border-radius: 4px; font-size: 11.5px; }
@@ -109,8 +97,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // ======================================================================
-  // ধাপ ১: এখানে আপনার Supabase প্রজেক্টের URL ও anon key বসান
-  // (Supabase Dashboard → Project Settings → API)
+  // এখানে আপনার Supabase প্রজেক্টের URL ও anon key বসান
+  // (admin.html এ যা বসিয়েছেন, ঠিক একই মান এখানেও বসান)
   // ======================================================================
   const SUPABASE_URL = "https://ihefqfuzxvytpjkfrmps.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloZWZxZnV6eHZ5dHBqa2ZybXBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2ODQzNTcsImV4cCI6MjEwNDI2MDM1N30.7y7vPJC-OpJno_jf0QTxbFA3_5PM9_GCXw4uoVhG74w";
@@ -120,6 +108,7 @@
 
   const TABLE = "app_data";
   const ROW_ID = "main";
+  const STUDENTS_TABLE = "students";
   const PROFILE_KEY = "lms:profile";
   const ENROLL_KEY = "lms:enrollments";
   const PROGRESS_KEY = "lms:progress";
@@ -128,12 +117,8 @@
     home: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
     course: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
     progress: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>',
-    shield: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
     play: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
     file: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
-    trash: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
-    plus: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
-    link: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
     chevronRight: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>',
     chevronLeft: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>',
     layers: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
@@ -142,58 +127,28 @@
     circle: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>',
   };
 
-  function uid() { return Math.random().toString(36).slice(2, 10); }
-  function esc(s) {
-    return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  }
-
-  const seedCourses = [
-    {
-      id: "course1",
-      title: "বেসিক কোর্স",
-      description: "নতুনদের জন্য শুরু থেকে শেখার কোর্স।",
-      modules: [
-        {
-          id: "m1",
-          name: "মডিউল ১: ভূমিকা",
-          videos: [{ id: "v1", title: "পাঠ ১: শুরুর কথা", url: "https://youtube.com/watch?v=example1" }],
-          books: [{ id: "b1", title: "প্রাথমিক গাইড", url: "https://example.com/guide.pdf" }],
-        },
-      ],
-    },
-  ];
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+  function lsGet(key, fallback) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } }
+  function lsSet(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* ignore quota errors */ } }
 
   const state = {
     screen: "boot",
-    courses: seedCourses,
+    courses: [],
     profile: null,
     enrollments: [],
     progress: {},
     activeCourseId: null,
     activeModuleId: null,
-    isAdmin: false,
-    deleteTarget: null,
     toast: "",
     toastTimer: null,
   };
 
-  // ---------- local (per-device) helpers for learner profile/progress ----------
-  function lsGet(key, fallback) {
-    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
-    catch (e) { return fallback; }
-  }
-  function lsSet(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* ignore quota errors */ }
-  }
-
   function showToast(msg) {
-    state.toast = msg;
-    render();
+    state.toast = msg; render();
     clearTimeout(state.toastTimer);
-    state.toastTimer = setTimeout(() => { state.toast = ""; render(); }, 1700);
+    state.toastTimer = setTimeout(() => { state.toast = ""; render(); }, 1600);
   }
   function go(screen) { state.screen = screen; render(); }
-
   function findCourse(id) { return state.courses.find((c) => c.id === id); }
   function findModule(course, id) { return course && course.modules.find((m) => m.id === id); }
   function allItemIds(course) { return course.modules.flatMap((m) => [...m.videos.map((v) => v.id), ...m.books.map((b) => b.id)]); }
@@ -209,89 +164,20 @@
     return { done, total: ids.length };
   }
 
-  // ======================================================================
-  // Supabase wiring
-  // ======================================================================
-  let supabase = null;
+  // ---------- Supabase (read-only for content) ----------
+  let sb = null;
   function initSupabase() {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Initial load
-    supabase.from(TABLE).select("courses").eq("id", ROW_ID).single().then(({ data, error }) => {
+    sb.from(TABLE).select("courses").eq("id", ROW_ID).single().then(({ data, error }) => {
       if (!error && data && Array.isArray(data.courses)) { state.courses = data.courses; render(); }
     });
 
-    // Real-time sync: any change to the row is pushed to every open tab/device instantly.
-    supabase.channel("app_data_changes")
+    sb.channel("app_data_changes")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: TABLE, filter: `id=eq.${ROW_ID}` }, (payload) => {
         if (payload.new && Array.isArray(payload.new.courses)) { state.courses = payload.new.courses; render(); }
       })
       .subscribe();
-
-    supabase.auth.onAuthStateChange((event, session) => {
-      const wasAdmin = state.isAdmin;
-      state.isAdmin = !!session;
-      if (state.isAdmin && !wasAdmin) go("admin-home");
-      if (!state.isAdmin && wasAdmin) go("home");
-    });
-  }
-
-  async function saveCourses() {
-    try {
-      const { error } = await supabase.from(TABLE).update({ courses: state.courses }).eq("id", ROW_ID);
-      if (error) throw error;
-    } catch (e) { console.error(e); showToast("সংরক্ষণ করতে সমস্যা হয়েছে"); }
-  }
-
-  async function adminLogin(email, password) {
-    const err = document.getElementById("admin-login-error");
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error && err) err.textContent = "ইমেইল বা পাসওয়ার্ড সঠিক নয়";
-  }
-  async function exitAdmin() { try { await supabase.auth.signOut(); } catch (e) { /* ignore */ } }
-
-  // ---------- admin content actions ----------
-  function addCourse(title, description) {
-    state.courses = [{ id: uid(), title, description, modules: [] }, ...state.courses];
-    saveCourses(); showToast("কোর্স যোগ হয়েছে"); go("admin-courses");
-  }
-  function deleteCourse(id) {
-    state.courses = state.courses.filter((c) => c.id !== id);
-    state.deleteTarget = null;
-    saveCourses(); showToast("কোর্স মুছে ফেলা হয়েছে"); go("admin-courses");
-  }
-  function addModule(courseId, name) {
-    state.courses = state.courses.map((c) => c.id === courseId ? { ...c, modules: [{ id: uid(), name, videos: [], books: [] }, ...c.modules] } : c);
-    saveCourses(); showToast("মডিউল যোগ হয়েছে"); go("admin-courseDetail");
-  }
-  function deleteModule(courseId, moduleId) {
-    state.courses = state.courses.map((c) => c.id === courseId ? { ...c, modules: c.modules.filter((m) => m.id !== moduleId) } : c);
-    state.deleteTarget = null;
-    saveCourses(); showToast("মডিউল মুছে ফেলা হয়েছে"); go("admin-courseDetail");
-  }
-  function addVideo(courseId, moduleId, title, url) {
-    state.courses = state.courses.map((c) => c.id !== courseId ? c : {
-      ...c, modules: c.modules.map((m) => m.id === moduleId ? { ...m, videos: [{ id: uid(), title, url }, ...m.videos] } : m),
-    });
-    saveCourses(); showToast("ভিডিও যোগ হয়েছে"); go("admin-moduleDetail");
-  }
-  function deleteVideo(courseId, moduleId, vid) {
-    state.courses = state.courses.map((c) => c.id !== courseId ? c : {
-      ...c, modules: c.modules.map((m) => m.id === moduleId ? { ...m, videos: m.videos.filter((v) => v.id !== vid) } : m),
-    });
-    saveCourses(); showToast("ভিডিও মুছে ফেলা হয়েছে"); go("admin-moduleDetail");
-  }
-  function addBook(courseId, moduleId, title, url) {
-    state.courses = state.courses.map((c) => c.id !== courseId ? c : {
-      ...c, modules: c.modules.map((m) => m.id === moduleId ? { ...m, books: [{ id: uid(), title, url }, ...m.books] } : m),
-    });
-    saveCourses(); showToast("বই যোগ হয়েছে"); go("admin-moduleDetail");
-  }
-  function deleteBook(courseId, moduleId, bid) {
-    state.courses = state.courses.map((c) => c.id !== courseId ? c : {
-      ...c, modules: c.modules.map((m) => m.id === moduleId ? { ...m, books: m.books.filter((b) => b.id !== bid) } : m),
-    });
-    saveCourses(); showToast("বই মুছে ফেলা হয়েছে"); go("admin-moduleDetail");
   }
 
   // ---------- learner actions (localStorage, per device) ----------
@@ -312,14 +198,27 @@
     }
     render();
   }
-  function login() {
-    const name = document.getElementById("login-name").value.trim();
+  async function login() {
     const contact = document.getElementById("login-contact").value.trim();
     const err = document.getElementById("login-error");
-    if (!name || !contact) { err.textContent = "নাম এবং ফোন/ইমেইল দুটোই দিন"; return; }
-    state.profile = { name, contact };
-    lsSet(PROFILE_KEY, state.profile);
-    go("home");
+    const btn = document.getElementById("login-btn");
+    if (!contact) { err.textContent = "ফোন নম্বর বা ইমেইল দিন"; return; }
+    err.textContent = "";
+    if (btn) { btn.disabled = true; btn.textContent = "যাচাই করা হচ্ছে…"; }
+    try {
+      const { data, error } = await sb.from(STUDENTS_TABLE).select("name, contact").eq("contact", contact).maybeSingle();
+      if (error || !data) {
+        err.textContent = "এই তথ্য দিয়ে কোনো অ্যাকাউন্ট পাওয়া যায়নি। অ্যাডমিনের সাথে যোগাযোগ করুন।";
+        return;
+      }
+      state.profile = { name: data.name, contact: data.contact };
+      lsSet(PROFILE_KEY, state.profile);
+      go("home");
+    } catch (e) {
+      err.textContent = "কিছু একটা সমস্যা হয়েছে, আবার চেষ্টা করুন।";
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = "লগইন করুন"; }
+    }
   }
   function logoutLearner() {
     state.profile = null;
@@ -327,14 +226,6 @@
     go("login");
   }
 
-  function toggleForm(id) {
-    const form = document.getElementById(id + "-form");
-    const btn = document.getElementById(id + "-toggle");
-    if (form.classList.contains("hidden")) { form.classList.remove("hidden"); btn.classList.add("hidden"); }
-    else { form.classList.add("hidden"); btn.classList.remove("hidden"); }
-  }
-
-  // ---------- render helpers ----------
   function logoSvg(size) {
     return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="32" cy="32" r="32" fill="var(--ink)"/>
@@ -347,41 +238,18 @@
   }
 
   function header() {
-    if (state.screen === "login" || state.screen === "adminLogin") return "";
+    if (state.screen === "boot" || state.screen === "login") return "";
     let title = "জ্ঞানকোষ";
-    let sub = state.isAdmin ? "অ্যাডমিন অ্যাপ" : "ইউজার অ্যাপ";
+    let sub = "ইউজার অ্যাপ";
     let showBack = false;
-
-    if (state.screen === "admin-courseDetail") { const c = findCourse(state.activeCourseId); title = c ? c.title : title; sub = "মডিউল পরিচালনা"; showBack = true; }
-    else if (state.screen === "admin-moduleDetail") { const c = findCourse(state.activeCourseId); const m = findModule(c, state.activeModuleId); title = m ? m.name : title; sub = "ভিডিও ও বই"; showBack = true; }
-    else if (state.screen === "courseDetail") { const c = findCourse(state.activeCourseId); title = c ? c.title : title; sub = "কোর্স বিবরণ"; showBack = true; }
+    if (state.screen === "courseDetail") { const c = findCourse(state.activeCourseId); title = c ? c.title : title; sub = "কোর্স বিবরণ"; showBack = true; }
     else if (state.screen === "moduleDetail") { const c = findCourse(state.activeCourseId); const m = findModule(c, state.activeModuleId); title = m ? m.name : title; sub = "ভিডিও ও বই"; showBack = true; }
-
-    const backTarget = state.isAdmin
-      ? (state.screen === "admin-moduleDetail" ? "admin-courseDetail" : "admin-courses")
-      : (state.screen === "moduleDetail" ? "courseDetail" : "courses");
-
-    const leftEl = showBack
-      ? `<button class="back-btn" onclick="App.go('${backTarget}')" aria-label="ফিরে যান">${ICONS.chevronLeft}</button>`
-      : logoSvg(44);
-
-    let rightEl = "";
-    if (!showBack) {
-      if (state.isAdmin) rightEl = `<button class="header-icon-btn" onclick="App.exitAdmin()" aria-label="অ্যাডমিন মোড থেকে বের হন">${ICONS.logout}</button>`;
-      else rightEl = `<button class="header-icon-btn" onclick="App.go('adminLogin')" aria-label="অ্যাডমিন মোডে প্রবেশ করুন">${ICONS.shield}</button>`;
-    }
-    return `<div class="header">${leftEl}<div class="header-text"><h1>${esc(title)}</h1><p>${esc(sub)}</p></div>${rightEl}</div>`;
+    const backTarget = state.screen === "moduleDetail" ? "courseDetail" : "courses";
+    const leftEl = showBack ? `<button class="back-btn" onclick="App.go('${backTarget}')" aria-label="ফিরে যান">${ICONS.chevronLeft}</button>` : logoSvg(44);
+    return `<div class="header">${leftEl}<div class="header-text"><h1>${esc(title)}</h1><p>${esc(sub)}</p></div></div>`;
   }
 
   function bottomNav() {
-    if (state.screen === "login" || state.screen === "adminLogin") return "";
-    if (state.isAdmin) {
-      if (state.screen !== "admin-home" && state.screen !== "admin-courses") return "";
-      return `<div class="bottom-nav">
-        <button class="nav-btn ${state.screen === "admin-home" ? "active" : ""}" onclick="App.go('admin-home')">${ICONS.home}ড্যাশবোর্ড</button>
-        <button class="nav-btn ${state.screen === "admin-courses" ? "active" : ""}" onclick="App.go('admin-courses')">${ICONS.course}কোর্স</button>
-      </div>`;
-    }
     if (!["home", "courses", "progress"].includes(state.screen)) return "";
     return `<div class="bottom-nav">
       <button class="nav-btn ${state.screen === "home" ? "active" : ""}" onclick="App.go('home')">${ICONS.home}হোম</button>
@@ -392,41 +260,11 @@
 
   function emptyState(icon, title, body) { return `<div class="empty">${icon}<p class="empty-title">${esc(title)}</p><p class="empty-body">${esc(body)}</p></div>`; }
 
-  function addToggleAndForm(idPrefix, label, innerFieldsHtml, submitJs) {
-    return `
-      <button class="add-toggle" id="${idPrefix}-toggle" onclick="App.toggleForm('${idPrefix}')">${ICONS.plus} ${esc(label)}</button>
-      <div class="add-form hidden" id="${idPrefix}-form">
-        ${innerFieldsHtml}
-        <div class="form-actions">
-          <button class="btn ghost" onclick="App.toggleForm('${idPrefix}')">বাতিল</button>
-          <button class="btn primary" onclick="${submitJs}">যোগ করুন</button>
-        </div>
-      </div>`;
-  }
-
   function screenBoot() {
     if (!isConfigured) {
-      return `<div class="config-warning">
-        <b>Supabase URL/key বসানো হয়নি।</b><br><br>
-        এই ফাইলের শুরুর দিকে <code>SUPABASE_URL</code> ও <code>SUPABASE_ANON_KEY</code> অংশে আপনার নিজের Supabase প্রজেক্টের তথ্য বসান, তারপর আবার লোড করুন। বিস্তারিত নির্দেশনা চ্যাটে দেওয়া আছে।
-      </div>`;
+      return `<div class="config-warning"><b>Supabase URL/key বসানো হয়নি।</b><br><br>এই ফাইলের শুরুর দিকে <code>SUPABASE_URL</code> ও <code>SUPABASE_ANON_KEY</code> অংশে আপনার প্রজেক্টের তথ্য বসান (admin.html-এ যা বসিয়েছেন, একই মান)।</div>`;
     }
     return `<div class="login-wrap"><div class="login-card">${logoSvg(48)}<h2>জ্ঞানকোষ</h2><p class="login-sub">লোড হচ্ছে…</p></div></div>`;
-  }
-
-  function screenAdminLogin() {
-    return `<div class="gate" style="position:static; background:var(--ink); min-height:640px;">
-      <div class="gate-card">
-        <div class="gate-icon">${ICONS.shield}</div>
-        <h3>জ্ঞানকোষ অ্যাডমিন</h3>
-        <p class="gate-sub">Supabase-এ তৈরি করা অ্যাডমিন ইমেইল ও পাসওয়ার্ড দিন</p>
-        <input class="text-input" id="admin-email" placeholder="ইমেইল">
-        <input class="text-input" type="password" id="admin-password" placeholder="পাসওয়ার্ড" onkeydown="if(event.key==='Enter') App.adminLoginSubmit()">
-        <p class="gate-error" id="admin-login-error"></p>
-        <button class="btn primary" style="width:100%" onclick="App.adminLoginSubmit()">প্রবেশ করুন</button>
-        <p class="gate-hint" style="margin-top:14px; cursor:pointer; text-decoration:underline;" onclick="App.backFromAdminLogin()">ফিরে যান</p>
-      </div>
-    </div>`;
   }
 
   function screenLogin() {
@@ -434,21 +272,18 @@
       <div class="login-card">
         ${logoSvg(48)}
         <h2>জ্ঞানকোষ-এ স্বাগতম</h2>
-        <p class="login-sub">কোর্স দেখতে ও অগ্রগতি সংরক্ষণ করতে লগইন করুন</p>
-        <input class="text-input" id="login-name" placeholder="আপনার নাম">
+        <p class="login-sub">অ্যাডমিন যে ফোন নম্বর/ইমেইল দিয়ে আপনাকে যোগ করেছেন, সেটা দিন</p>
         <input class="text-input" id="login-contact" placeholder="ফোন নম্বর বা ইমেইল" onkeydown="if(event.key==='Enter') App.login()">
         <p class="gate-error" id="login-error"></p>
-        <button class="btn primary" style="width:100%" onclick="App.login()">লগইন করুন</button>
-        <p class="login-note">এটি একটি সরল লগইন — পাসওয়ার্ড বা যাচাইকরণ নেই, শুধু আপনার অগ্রগতি এই ডিভাইসে মনে রাখার জন্য।</p>
-        <p class="login-note" style="margin-top:16px; cursor:pointer; text-decoration:underline;" onclick="App.go('adminLogin')">অ্যাডমিন হিসেবে প্রবেশ করুন</p>
+        <button class="btn primary" id="login-btn" style="width:100%" onclick="App.login()">লগইন করুন</button>
+        <p class="login-note">শুধু অ্যাডমিনের অনুমোদিত ইউজাররাই লগইন করতে পারবেন। অ্যাকাউন্ট না থাকলে অ্যাডমিনের সাথে যোগাযোগ করুন।</p>
       </div>
     </div>`;
   }
 
   function screenHome() {
     const enrolledCount = state.courses.filter((c) => state.enrollments.includes(c.id)).length;
-    return `
-      <div class="home-hero">${logoSvg(34)}<h2>স্বাগতম, ${esc(state.profile.name)}</h2><p>আপনার কোর্স ব্রাউজ করুন, লেসন সম্পন্ন করে অগ্রগতি রাখুন।</p></div>
+    return `<div class="home-hero">${logoSvg(34)}<h2>স্বাগতম, ${esc(state.profile.name)}</h2><p>আপনার কোর্স ব্রাউজ করুন, লেসন সম্পন্ন করে অগ্রগতি রাখুন।</p></div>
       <div class="stat-grid">
         <div class="stat-card"><p class="stat-num">${enrolledCount}</p><p class="stat-label">ভর্তি কোর্স</p></div>
         <div class="stat-card"><p class="stat-num">${state.courses.length}</p><p class="stat-label">মোট কোর্স</p></div>
@@ -489,26 +324,10 @@
       ${enrolledBtn}<div class="subhead">${ICONS.layers}<h3>মডিউল</h3><span class="count">${c.modules.length}</span></div>${modulesHtml}`;
   }
 
-  function screenModuleDetail(isAdmin) {
+  function screenModuleDetail() {
     const c = findCourse(state.activeCourseId);
     const m = findModule(c, state.activeModuleId);
     if (!c || !m) return emptyState(ICONS.layers, "মডিউল পাওয়া যায়নি", "");
-
-    function itemRow(item, iconKey, actionLabel, onDeleteJs) {
-      const del = onDeleteJs ? `<button class="icon-btn danger" onclick="${onDeleteJs}" aria-label="মুছুন">${ICONS.trash}</button>` : "";
-      return `<div class="item-row"><div class="item-icon">${ICONS[iconKey]}</div><div class="item-info"><p class="item-title">${esc(item.title)}</p><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer" class="item-link">${actionLabel} ${ICONS.chevronRight}</a></div>${del}</div>`;
-    }
-
-    if (isAdmin) {
-      const videosHtml = m.videos.length === 0 ? emptyState(ICONS.play, "কোনো ভিডিও নেই", "এই মডিউলে এখনো ভিডিও যোগ করা হয়নি।") : m.videos.map((v) => itemRow(v, "play", "ভিডিও দেখুন", `App.deleteVideo('${c.id}','${m.id}','${v.id}')`)).join("");
-      const booksHtml = m.books.length === 0 ? emptyState(ICONS.file, "কোনো বই নেই", "এই মডিউলে এখনো বই যোগ করা হয়নি।") : m.books.map((b) => itemRow(b, "file", "বই খুলুন", `App.deleteBook('${c.id}','${m.id}','${b.id}')`)).join("");
-      const videoForm = addToggleAndForm("add-video", "নতুন ভিডিও যোগ করুন", `<input class="text-input" id="add-video-title" placeholder="ভিডিওর শিরোনাম"><div class="url-field">${ICONS.link}<input class="text-input" id="add-video-url" placeholder="ভিডিও লিংক (URL)"></div>`, `App.submitAdd('video','${c.id}','${m.id}')`);
-      const bookForm = addToggleAndForm("add-book", "নতুন বই যোগ করুন", `<input class="text-input" id="add-book-title" placeholder="বইয়ের শিরোনাম"><div class="url-field">${ICONS.link}<input class="text-input" id="add-book-url" placeholder="পিডিএফ লিংক (URL)"></div>`, `App.submitAdd('book','${c.id}','${m.id}')`);
-      return `<div class="subhead">${ICONS.play}<h3>ভিডিও</h3><span class="count">${m.videos.length}</span></div>${videosHtml}${videoForm}
-        <div class="subhead">${ICONS.file}<h3>পিডিএফ বই</h3><span class="count">${m.books.length}</span></div>${booksHtml}${bookForm}
-        <button class="cat-detail-delete" onclick="App.confirmDelete('module','${m.id}','${c.id}','${esc(m.name).replace(/'/g, "&#39;")}')">${ICONS.trash} এই মডিউল মুছে ফেলুন</button>`;
-    }
-
     const doneIds = state.progress[c.id] || [];
     const videosHtml = m.videos.length === 0 ? emptyState(ICONS.play, "কোনো ভিডিও নেই", "এই মডিউলে এখনো ভিডিও যোগ করা হয়নি।")
       : m.videos.map((v) => { const done = doneIds.includes(v.id); return `<div class="item-row"><div class="item-icon">${ICONS.play}</div><div class="item-info"><p class="item-title">${esc(v.title)}</p><a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer" class="item-link">ভিডিও দেখুন ${ICONS.chevronRight}</a></div><button class="icon-btn" style="color:${done ? "var(--teal)" : "var(--ink-soft)"}" onclick="App.toggleComplete('${c.id}','${v.id}')">${done ? ICONS.checkCircle : ICONS.circle}</button></div>`; }).join("");
@@ -530,109 +349,31 @@
       </div>`;
   }
 
-  function screenAdminHome() {
-    const totalModules = state.courses.reduce((n, c) => n + c.modules.length, 0);
-    const totalVideos = state.courses.reduce((n, c) => n + c.modules.reduce((m2, mo) => m2 + mo.videos.length, 0), 0);
-    const totalBooks = state.courses.reduce((n, c) => n + c.modules.reduce((m2, mo) => m2 + mo.books.length, 0), 0);
-    return `<div class="home-hero">${ICONS.shield.replace('width="19" height="19"', 'width="26" height="26"')}<h2>অ্যাডমিন ড্যাশবোর্ড</h2><p>একাধিক কোর্স তৈরি করুন, মডিউল সাজান, ভিডিও ও পিডিএফ বই যোগ করুন। Supabase-এর মাধ্যমে রিয়েল-টাইম সিঙ্ক হয়।</p></div>
-      <div class="stat-grid three">
-        <div class="stat-card"><p class="stat-num">${state.courses.length}</p><p class="stat-label">কোর্স</p></div>
-        <div class="stat-card"><p class="stat-num">${totalModules}</p><p class="stat-label">মডিউল</p></div>
-        <div class="stat-card"><p class="stat-num">${totalVideos + totalBooks}</p><p class="stat-label">কনটেন্ট</p></div>
-      </div>
-      <div class="quick-list"><button class="quick-card" onclick="App.go('admin-courses')"><div class="quick-card-icon">${ICONS.course}</div><div class="quick-card-text"><p>সব কোর্স দেখুন</p><p>${totalVideos} ভিডিও • ${totalBooks} বই</p></div></button></div>`;
-  }
-
-  function screenAdminCourses() {
-    const list = state.courses.length === 0 ? emptyState(ICONS.course, "কোনো কোর্স নেই", "নিচ থেকে নতুন কোর্স যোগ করুন।")
-      : state.courses.map((c) => `<div class="cat-card"><div class="cat-card-icon">${ICONS.course}</div><div class="cat-card-body" onclick="App.openAdminCourse('${c.id}')"><p>${esc(c.title)}</p>${c.description ? `<p class="desc">${esc(c.description)}</p>` : ""}<p>${c.modules.length} মডিউল</p></div><button class="icon-btn danger" onclick="App.confirmDelete('course','${c.id}',null,'${esc(c.title).replace(/'/g, "&#39;")}')" aria-label="কোর্স মুছুন">${ICONS.trash}</button></div>`).join("");
-    const courseForm = addToggleAndForm("add-course", "নতুন কোর্স যোগ করুন", `<input class="text-input" id="add-course-title" placeholder="কোর্সের নাম"><input class="text-input" id="add-course-desc" placeholder="সংক্ষিপ্ত বিবরণ (ঐচ্ছিক)">`, `App.submitAddCourse()`);
-    return `<h2 class="section-title">কোর্স</h2><p class="section-sub">প্রতিটি কোর্সে যত খুশি মডিউল রাখুন</p>${list}${courseForm}`;
-  }
-
-  function screenAdminCourseDetail() {
-    const c = findCourse(state.activeCourseId);
-    if (!c) return emptyState(ICONS.course, "কোর্স পাওয়া যায়নি", "");
-    const modulesHtml = c.modules.length === 0 ? emptyState(ICONS.layers, "কোনো মডিউল নেই", "এই কোর্সে এখনো মডিউল যোগ করা হয়নি।")
-      : c.modules.map((m) => `<div class="cat-card"><div class="cat-card-icon">${ICONS.layers}</div><div class="cat-card-body" onclick="App.openAdminModule('${m.id}')"><p>${esc(m.name)}</p><p>${m.videos.length} ভিডিও • ${m.books.length} বই</p></div><button class="icon-btn danger" onclick="App.confirmDelete('module','${m.id}','${c.id}','${esc(m.name).replace(/'/g, "&#39;")}')" aria-label="মডিউল মুছুন">${ICONS.trash}</button></div>`).join("");
-    const moduleForm = addToggleAndForm("add-module", "নতুন মডিউল যোগ করুন", `<input class="text-input" id="add-module-name" placeholder="মডিউলের নাম (যেমনঃ মডিউল ৩)">`, `App.submitAddModule('${c.id}')`);
-    return `${c.description ? `<p class="section-sub" style="margin-top:-4px">${esc(c.description)}</p>` : ""}
-      <div class="subhead">${ICONS.layers}<h3>মডিউল</h3><span class="count">${c.modules.length}</span></div>${modulesHtml}${moduleForm}
-      <button class="cat-detail-delete" onclick="App.confirmDelete('course','${c.id}',null,'${esc(c.title).replace(/'/g, "&#39;")}')">${ICONS.trash} এই কোর্স মুছে ফেলুন</button>`;
-  }
-
-  function confirmModal() {
-    const d = state.deleteTarget;
-    if (!d) return "";
-    const title = d.type === "course" ? "কোর্স মুছবেন?" : "মডিউল মুছবেন?";
-    const body = d.type === "course" ? `"${esc(d.name)}" কোর্সের সব মডিউল, ভিডিও ও বই একসাথে মুছে যাবে।` : `"${esc(d.name)}" মডিউলের সব ভিডিও ও বই একসাথে মুছে যাবে।`;
-    const confirmJs = d.type === "course" ? `App.deleteCourse('${d.id}')` : `App.deleteModule('${d.parentId}','${d.id}')`;
-    return `<div class="gate"><div class="gate-card"><div class="gate-icon" style="color:var(--danger)">${ICONS.trash}</div><h3>${title}</h3><p class="gate-sub">${body}</p>
-      <div class="form-actions"><button class="btn ghost" onclick="App.cancelDelete()">বাতিল</button><button class="btn danger-btn" onclick="${confirmJs}">মুছে ফেলুন</button></div></div></div>`;
-  }
-
   function render() {
     const app = document.getElementById("app");
     if (state.screen === "boot") { app.innerHTML = screenBoot(); return; }
-    if (state.screen === "adminLogin") { app.innerHTML = screenAdminLogin(); return; }
     if (state.screen === "login") { app.innerHTML = screenLogin(); return; }
-
     let body = "";
-    if (state.isAdmin) {
-      if (state.screen === "admin-home") body = screenAdminHome();
-      else if (state.screen === "admin-courses") body = screenAdminCourses();
-      else if (state.screen === "admin-courseDetail") body = screenAdminCourseDetail();
-      else if (state.screen === "admin-moduleDetail") body = screenModuleDetail(true);
-      else body = screenAdminHome();
-    } else {
-      if (state.screen === "home") body = screenHome();
-      else if (state.screen === "courses") body = screenCourses();
-      else if (state.screen === "courseDetail") body = screenCourseDetail();
-      else if (state.screen === "moduleDetail") body = screenModuleDetail(false);
-      else if (state.screen === "progress") body = screenProgress();
-      else body = screenHome();
-    }
-    const adminFlag = state.isAdmin ? `<div class="admin-flag">অ্যাডমিন মোড</div>` : "";
+    if (state.screen === "home") body = screenHome();
+    else if (state.screen === "courses") body = screenCourses();
+    else if (state.screen === "courseDetail") body = screenCourseDetail();
+    else if (state.screen === "moduleDetail") body = screenModuleDetail();
+    else if (state.screen === "progress") body = screenProgress();
+    else body = screenHome();
     const toastHtml = state.toast ? `<div class="toast">${esc(state.toast)}</div>` : "";
-    app.innerHTML = `${adminFlag}${header()}<div class="content">${body}</div>${toastHtml}${bottomNav()}${confirmModal()}`;
+    app.innerHTML = `${header()}<div class="content">${body}</div>${toastHtml}${bottomNav()}`;
   }
 
   window.App = {
-    go, toggleForm, login, logoutLearner, exitAdmin, enroll, toggleComplete,
-    backFromAdminLogin() { go(state.profile ? "home" : "login"); },
-    adminLoginSubmit() {
-      const email = document.getElementById("admin-email").value.trim();
-      const password = document.getElementById("admin-password").value;
-      adminLogin(email, password);
-    },
+    go, login, logoutLearner, enroll, toggleComplete,
     openCourse(id) { state.activeCourseId = id; go("courseDetail"); },
     openModule(id) { state.activeModuleId = id; go("moduleDetail"); },
-    openAdminCourse(id) { state.activeCourseId = id; go("admin-courseDetail"); },
-    openAdminModule(id) { state.activeModuleId = id; go("admin-moduleDetail"); },
-    confirmDelete(type, id, parentId, name) { state.deleteTarget = { type, id, parentId, name }; render(); },
-    cancelDelete() { state.deleteTarget = null; render(); },
-    deleteCourse, deleteModule, deleteVideo, deleteBook,
-    submitAddCourse() {
-      const title = document.getElementById("add-course-title").value.trim();
-      const desc = document.getElementById("add-course-desc").value.trim();
-      if (!title) return; addCourse(title, desc);
-    },
-    submitAddModule(courseId) {
-      const name = document.getElementById("add-module-name").value.trim();
-      if (!name) return; addModule(courseId, name);
-    },
-    submitAdd(kind, courseId, moduleId) {
-      const title = document.getElementById(`add-${kind}-title`).value.trim();
-      const url = document.getElementById(`add-${kind}-url`).value.trim();
-      if (!title || !url) return;
-      if (kind === "video") addVideo(courseId, moduleId, title, url); else addBook(courseId, moduleId, title, url);
-    },
   };
 
   function boot() {
     state.screen = "boot";
     render();
-    if (!isConfigured) return; // stop here; warning is already shown
+    if (!isConfigured) return;
 
     state.profile = lsGet(PROFILE_KEY, null);
     state.enrollments = lsGet(ENROLL_KEY, []);
@@ -644,3 +385,5 @@
   }
   boot();
 </script>
+</body>
+</html>
